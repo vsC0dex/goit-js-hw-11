@@ -50,7 +50,8 @@ img {
 
 .search-btn {
   position: absolute;
-  width: 27px;
+  width: 35px;
+  height: 30px;
   right: 0;
   cursor: pointer;
 }
@@ -59,6 +60,11 @@ img {
   background-color: antiquewhite;
   outline: 2px solid rgb(11, 11, 141);
   border-color: transparent;
+}
+
+.input {
+  height: 30px;
+  width: 350px;
 }
 
 .input:focus {

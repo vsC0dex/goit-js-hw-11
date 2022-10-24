@@ -3,6 +3,7 @@ import PixabayApiService from './js/fetchImages';
 import markup from './templates/markupe.hbs';
 import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
+import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const refs = {
   form: document.querySelector('.search-form'),
@@ -11,6 +12,10 @@ const refs = {
   input: document.querySelector('[name=searchQuery]'),
   loadMoreBtn: document.querySelector('.load-more-btn'),
   guard: document.querySelector('.guard'),
+};
+
+const notifyOptions = {
+  showOnlyTheLastOne: true,
 };
 
 const apiPixabay = new PixabayApiService();
@@ -25,16 +30,20 @@ const observer = new IntersectionObserver(onLoad, forGuardOptions);
 function onFormSubmit(e) {
   e.preventDefault();
 
-  apiPixabay.value = e.currentTarget[0].value;
+  apiPixabay.value = e.currentTarget[0].value.trim();
 
-  if (apiPixabay.value.trim() === '') {
-    return alert('cant find');
+  if (apiPixabay.value === '') {
+    return Notify.info('Enter something', notifyOptions);
   }
 
   apiPixabay.resetPage();
   apiPixabay.fetchArticles().then(data => {
+    if (data.total === 0) {
+      return Notify.failure('');
+    }
     newRenderOnSearch();
     render(data.hits);
+
     new SimpleLightbox('.gallery a', {
       captionsData: 'alt',
       captionDelay: 250,
@@ -49,9 +58,9 @@ function onFormSubmit(e) {
 refs.form.addEventListener('submit', onFormSubmit);
 
 function render(data) {
-  observer.observe(refs.guard);
   refs.div.insertAdjacentHTML('beforeend', markup(data));
 
+  observer.observe(refs.guard);
   return;
 }
 
@@ -62,13 +71,13 @@ function newRenderOnSearch() {
 function onLoad(entries) {
   entries.forEach(entry => {
     if (entry.isIntersecting) {
-      refs.div.insertAdjacentHTML(
-        'beforeend',
-        apiPixabay.fetchArticles().then(data => render(data.hits))
-      );
+      apiPixabay.fetchArticles().then(data => {
+        render(data.hits);
+      });
     }
   });
 }
+
 // ------------------------------------------------------------------------
 // let page = 1;
 
